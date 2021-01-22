@@ -54,7 +54,7 @@ def img09_decode(data: [bytes, bytearray, BufferedIOBase], width: int, height: i
     return _img09_decode1(data, width, height, offset)
 
 class ImageTable():
-    def __init__(self, data: [bytes, bytearray, BufferedIOBase], offset: int=0):
+    def __init__(self, data: [bytes, bytearray, BufferedIOBase], offset: int):
         self._images = []
         self._fd = data
         if not isinstance(data, BufferedIOBase):
@@ -112,19 +112,24 @@ class ImageTable():
 
     def hash(self, id: int):
         img = self._images[id]
+        if img["data"]: return
         if img["type"] == "09":
             self._fd.seek(img["offset"])
             img["data"] = bytes(img09_decode(self._fd, img["width"], img["height"], img["offset"]))
 
         else:
-            raise NotImplementedError(f"Image type f{type} is not supported")
+            raise NotImplementedError(f"Image type {img['type']} is not supported")
 
-if __name__ == "__main__":
+if __name__ == "__main__" and False:
     import test_imgs
-    print(img09_decode(test_imgs.IMG_09_SAMPLE, 176, 220))
-    tbl = ImageTable(test_imgs.IMG_TBL_SAMPLE)
+    print(img09_decode(test_imgs.IMG_09_SAMPLE, 176, 220)[:15])
+    tbl = ImageTable(test_imgs.IMG_TBL_SAMPLE, 0)
 
     tbl.hash_all()
-    print(tbl.get(0))
+    print(tbl.get(0)[:15])
 
-    print(tbl.dump_all())
+    print(tbl.dump_all()[:15])
+
+    tbl_err = ImageTable(test_imgs.IMG_TBL_SAMPLE_UNSUPPORT, 0)
+
+    tbl_err.hash_all()
