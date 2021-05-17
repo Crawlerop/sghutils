@@ -2,7 +2,8 @@ from io import BufferedIOBase, BytesIO, IOBase
 import struct
 
 def _img09_decode1(io: IOBase, width: int, height: int, offset: int=0):
-    assert io.read(1)[0] == 0x09
+    header = io.read(1)[0]
+    assert header in [0x09,0x4f,0x3b]
     start_bit = io.read(1)[0]
     start_offset = (start_bit*2) + 2
     io.seek(offset+start_offset)
@@ -83,7 +84,7 @@ class ImageTable():
                 "data": None
             }
 
-            if f_bit == b"\x09":
+            if f_bit == b"\x09" or f_bit == b"\x4f" or f_bit == b"\x3b":
                 imgtmp["type"] = "09"
 
             elif f_bit == b"I" and self._fd.read(3) == b"FEG":
